@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"image"
 	"log"
 	"os"
 	"sort"
@@ -138,11 +140,11 @@ func main() {
 		log.Fatal("Timed out while waiting for webcam frame.")
 	}
 
-	// fmt.Println("Reading frame...")
-	// frame, err := cam.ReadFrame()
-	// if err != nil {
-	// 	log.Fatalf("Failed to read frame: %v", err)
-	// }
+	fmt.Println("Reading frame...")
+	frame, err := cam.ReadFrame()
+	if err != nil {
+		log.Fatalf("Failed to read frame: %v", err)
+	}
 	// if len(frame) == 0 {
 	// 	log.Fatal("Could not read frame; frame empty.")
 	// }
@@ -152,7 +154,7 @@ func main() {
 	// }
 	// fmt.Println("\n==FRAME END==")
 
-	// fmt.Println("Decoding frame...")
+	fmt.Println("Decoding frame...")
 	// cfg, _, err := image.DecodeConfig(bytes.NewReader(frame))
 	// if err != nil {
 	// 	log.Fatalf("image/jpeg: %v", err)
@@ -160,8 +162,78 @@ func main() {
 	//
 	// fmt.Printf("Image config: %v\n", cfg)
 
-	// _, _, err = image.Decode(bytes.NewReader(frame))
+	_, _, err = image.Decode(bytes.NewReader(frame))
+	if err != nil {
+		log.Fatalf("image.Decode: %v", err)
+	}
+
+	// fmt.Printf("Image format: %s\n", reflect.TypeOf(img.ColorModel()).String())
+
+	// img, err := openvg.CreateImage(openvg.ImageFormatSrgbx8888, imgW, imgH, []openvg.ImageQuality{openvg.ImageQualityFaster})
 	// if err != nil {
-	// 	log.Fatalf("image.Decode: %v", err)
+	// 	log.Fatalf("openvg: %v", err)
 	// }
+	// defer img.Destroy()
+
+	// eglDisplay.SwapBuffers(surface)
+
+	// fmt.Scanf("\n")
+
+	// for {
+	// 	err = cam.WaitForFrame(5 /* timeoutSeconds */)
+	// 	frameCount++
+	//
+	// 	if startTime.IsZero() {
+	// 		startTime = time.Now()
+	// 	}
+	//
+	// 	switch err.(type) {
+	// 	case nil:
+	// 	case *webcam.Timeout:
+	// 		fmt.Fprint(os.Stderr, err.Error())
+	// 		continue
+	// 	default:
+	// 		panic(err.Error())
+	// 	}
+	//
+	// 	frame, err := cam.ReadFrame()
+	// 	if len(frame) != 0 {
+	// 		// Process frame
+	// 		fmt.Printf("\033[u\033[KFrame rate: %f", float64(frameCount)/(time.Now().Sub(startTime).Seconds()))
+	// 	} else if err != nil {
+	// 		panic(err.Error())
+	// 	}
+	// }
+}
+
+type FrameSizes []webcam.FrameSize
+
+func (slice FrameSizes) Len() int {
+	return len(slice)
+}
+
+//For sorting purposes
+func (slice FrameSizes) Less(i, j int) bool {
+	ls := slice[i].MaxWidth * slice[i].MaxHeight
+	rs := slice[j].MaxWidth * slice[j].MaxHeight
+	return ls < rs
+}
+
+//For sorting purposes
+func (slice FrameSizes) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
+}
+
+func readChoice(s string) int {
+	var i int
+	for true {
+		print(s)
+		_, err := fmt.Scanf("%d\n", &i)
+		if err != nil || i < 1 {
+			println("Invalid input. Try again")
+		} else {
+			break
+		}
+	}
+	return i
 }

@@ -6,7 +6,7 @@
   "useAtomicWrites": false,
   "deleteLocal": false,
   "hostname": "pecan",
-  "target": "/home/pi/go/github.com/rltoscano/webcam-openvg-demo",
+  "target": "/home/pi/go/src/github.com/rltoscano/webcam-openvg-demo",
   "ignore": [
     ".remote-sync.json",
     ".git/**",

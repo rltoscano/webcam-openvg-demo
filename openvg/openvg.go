@@ -4,7 +4,9 @@ package openvg
 // #cgo LDFLAGS: -L/opt/vc/lib -lbrcmOpenVG -lbrcmGLESv2
 // #include "VG/openvg.h"
 import "C"
-import "errors"
+import (
+	"fmt"
+)
 
 func SetClearColor() {
 	clearColor := []C.float{1, 1, 1, 1}
@@ -17,9 +19,9 @@ func Clear(x, y, w, h int) {
 
 type ImageFormat C.VGImageFormat
 
-const (
-	ImageFormatSrgbx8888 ImageFormat = C.VG_sRGBX_888
-)
+// const (
+// 	ImageFormatSrgbx8888 ImageFormat = C.VGImageFormat.VG_sRGBX_888
+// )
 
 type ImageQuality C.VGImageQuality
 
@@ -34,13 +36,13 @@ type Image struct {
 }
 
 func CreateImage(format ImageFormat, width, height int, quality []ImageQuality) (Image, error) {
-	qualityBitfield = C.VGbitfield(0)
+	qualityBitField := C.VGbitfield(0)
 	for _, q := range quality {
-		qualityBitField |= q
+		qualityBitField |= C.VGbitfield(q)
 	}
-	handle := C.vgCreateImage(format, C.VGint(width), C.VGint(height), qualityBitField)
+	handle := C.vgCreateImage(C.VGImageFormat(format), C.VGint(width), C.VGint(height), qualityBitField)
 	if handle == C.VG_INVALID_HANDLE {
-		return Image{}, errors.New("failed to create image: %s", errNames[C.vgGetError()])
+		return Image{}, fmt.Errorf("failed to create image: %s", errNames[C.vgGetError()])
 	}
 	return Image{handle}, nil
 }
@@ -49,13 +51,22 @@ func (img Image) Destroy() error {
 	C.vgDestroyImage(img.handle)
 	err := C.vgGetError()
 	if err != C.VG_NO_ERROR {
-		return errors.New("failed to destroy image: %s", errNames[err])
+		return fmt.Errorf("failed to destroy image: %s", errNames[err])
 	}
 	return nil
 }
 
-func (img Image) WriteSubData() {
-	// TODO
+// Write calls vgImageSubData.
+func (img Image) Write() {
+	// C.vgImageSubData(
+	//   img.handle,
+	//   const void * data,
+	//   VGint dataStride,
+	//   VGImageFormat fmt,
+	//   VGint x,
+	//   VGint y,
+	//   VGint width,
+	//   VGint height)
 }
 
 var errNames = map[C.VGErrorCode]string{
