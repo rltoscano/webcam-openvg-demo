@@ -27,6 +27,8 @@ func main() {
 	}
 	defer ctx.Close()
 
+	ctx.Dump()
+
 	pkt, err := ctx.ReadFrame()
 	if err != nil {
 		log.Fatalf("Failed reading frame: %v", err)

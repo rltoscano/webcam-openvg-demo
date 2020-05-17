@@ -1,8 +1,10 @@
 package egl
 
-// #cgo CFLAGS: -I/opt/vc/include
-// #cgo LDFLAGS: -L/opt/vc/lib -lbrcmGLESv2 -lbrcmEGL
-// #include "EGL/egl.h"
+/*
+  #cgo CFLAGS: -I/opt/vc/include
+  #cgo LDFLAGS: -L/opt/vc/lib -lbrcmGLESv2 -lbrcmEGL
+  #include "EGL/egl.h"
+*/
 import "C"
 import (
 	"errors"
@@ -11,8 +13,10 @@ import (
 	"unsafe"
 )
 
+type NativeDisplayType C.EGLNativeDisplayType
+
 var (
-	DefaultDisplay C.EGLNativeDisplayType = C.EGLNativeDisplayType(C.EGL_DEFAULT_DISPLAY)
+	DefaultDisplay = NativeDisplayType(C.EGLNativeDisplayType(C.EGL_DEFAULT_DISPLAY))
 )
 
 type Api C.uint
@@ -40,8 +44,8 @@ type Display struct {
 	handle C.EGLDisplay
 }
 
-func GetDisplay(display C.EGLNativeDisplayType) (Display, error) {
-	handle := C.eglGetDisplay(display)
+func GetDisplay(display NativeDisplayType) (Display, error) {
+	handle := C.eglGetDisplay(C.EGLNativeDisplayType(display))
 	if handle == C.EGLDisplay(C.EGL_NO_DISPLAY) {
 		return Display{}, fmt.Errorf("could not get display for \"%d\"", display)
 	}

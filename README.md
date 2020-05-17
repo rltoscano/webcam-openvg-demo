@@ -2,8 +2,8 @@
 
 ## Overview
 
-Demonstrate an application that streams webcam video to the display with OpenVG. The app uses V4L2
-to interface with the webcam. The app is written in golang.
+Demonstrate an application that streams webcam video to the display with OpenVG.
+The app uses V4L2 to interface with the webcam. The app is written in golang.
 
 ## Dependencies
 

@@ -22,7 +22,8 @@ type InputFormat struct {
 
 // FormatContext wraps a AVFormatContext.
 type FormatContext struct {
-	cptr *C.AVFormatContext
+	cptr           *C.AVFormatContext
+	SourceFilename string
 }
 
 // Packet wraps a AVPacket.
@@ -45,7 +46,7 @@ func NewFormatContext(filename string, inputFormat InputFormat) (FormatContext, 
 	if result := C.avformat_open_input(&ctxp, filenamecs, inputFormat.cptr, nil /*options*/); result < 0 {
 		return FormatContext{}, fmt.Errorf("ffmpeg: failed to create context: %s", getErrStr(result))
 	}
-	return FormatContext{ctxp}, nil
+	return FormatContext{ctxp, filename}, nil
 }
 
 // Close wraps avformat_close_input.
@@ -66,15 +67,31 @@ func (ctx FormatContext) ReadFrame() (Packet, error) {
 	return p, nil
 }
 
+// Dump wraps av_dump_format.
+func (ctx FormatContext) Dump() {
+	cstr := C.CString(ctx.SourceFilename)
+	defer C.free(unsafe.Pointer(cstr))
+	C.av_dump_format(ctx.cptr, 0, cstr, 0 /*is_output*/)
+}
+
 // Free unref counts the packet and frees it.
 func (p Packet) Free() {
 	C.av_packet_unref(p.cptr)
 	C.av_packet_free(&p.cptr)
 }
 
-// DO NOT SUBMIT
-func (p Packet) FirstByte() byte {
-	return byte(*p.cptr.data)
+// Stream wraps an AVStream.
+type Stream struct {
+	cptr *C.AVStream
+}
+
+func (ctx FormatContext) GetStream(i int) (Stream, error) {
+	q := uintptr(unsafe.Pointer(*ctx.cptr.streams)) + (uintptr(i) * unsafe.Sizeof(*ctx.cptr.streams))
+	return Stream{(*C.AVStream)(unsafe.Pointer(q))}, nil
+}
+
+func (s Stream) Codecpar() CodecParameters {
+	return CodecParameters{s.cptr.codecpar}
 }
 
 // getErrStr gets the corresponding error message for the given result code.
